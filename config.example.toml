@@ -11,9 +11,16 @@
 
 [paths]
 # Glob patterns for your raw exports. Multiple patterns are supported.
+# discord-channel-exporter drops files into ~/Downloads:
+#   general-1788524967852.json           # single file, < 50k msgs
+#   general-1788524967852-part001.json   # multi-part, 50k each
+#   live-1234567890123456789-<ts>.json   # live capture
+# Point at whichever you have. All are bare JSON arrays of records.
 input_globs = [
-    "~/exports/*.json",
+    '~/Downloads/*.json',
 ]
+# Or keep exports organized per channel and scrub them all at once:
+#   '~/exports/*/*.json'
 # Files to skip (superseded re-exports, etc.)
 exclude = []
 out = "scrubbed.jsonl"
