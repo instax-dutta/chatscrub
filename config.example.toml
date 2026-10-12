@@ -1,0 +1,66 @@
+# chatscrub configuration
+#
+# Copy this file and edit. TOML single-quoted strings are literal: write regexes
+# exactly as they should appear (r"\bsomething\b" -> '\\bsomething\\b' is WRONG,
+# it should be '\bsomething\b').
+#
+# Section [identity] is the ONLY place you should put source-specific names.
+# Never hardcode them into the code.
+
+# ---------------------------------------------------------------- paths
+
+[paths]
+# Glob patterns for your raw exports. Multiple patterns are supported.
+input_globs = [
+    "~/exports/*.json",
+]
+# Files to skip (superseded re-exports, etc.)
+exclude = []
+out = "scrubbed.jsonl"
+# Tracks processed filenames so re-runs are incremental.
+manifest = ".processed-manifest"
+
+# ---------------------------------------------------------------- identity
+
+# The server / brand name -> [SERVER]. Regexes, case-insensitive.
+# Include common spellings and spaced variants.
+[identity]
+server_names = [
+    '\bsample-server\b',
+    'sampleserver',
+]
+creator_names = [
+    '\bexample[name]*\b',
+]
+
+# Emote packs that are branded to the room. 'gf' strips the 'gf_' prefix from
+# emote names like <:gf_Laugh:123> -> [EMOTE_Laugh].
+emote_prefixes = ['gf']
+
+# Regexes removed from the INSIDE of emote names, e.g. an emote pack whose
+# names embed the room/brand name.
+emote_interior = []
+
+# ---------------------------------------------------------------- filters
+
+# Length band applied to the RAW message before cleaning.
+min_len = 60
+max_len = 350
+
+# Extra per-source row-drop patterns (beyond the built-in safety gates).
+extra_blocklist = []
+
+[filters]
+
+# Caps. Keeps one spammy bot or doxxer from dominating the output.
+[caps]
+max_dupes = 3          # identical text kept at most N times (global)
+author_cap = 150       # max rows per author, per file
+small_circle_authors = 150   # fewer authors than this -> derive handle regex
+real_text_floor = 25   # min chars after tags are stripped
+
+# ---------------------------------------------------------------- optional
+
+# Pin human-readable labels for known rooms. Unknown rooms get room-<hash>.
+[labels]
+overrides = { "sample-server-export" = "sample-room" }

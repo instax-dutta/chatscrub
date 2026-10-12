@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chatscrub"
+version = "0.1.0"
+description = "Scrub raw chat exports into privacy-safe, safety-filtered corpora"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "chatscrub contributors" }]
+keywords = [
+    "chat", "anonymization", "privacy", "pii", "dataset", "nlp", "corpus",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Text Processing",
+    "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://github.com/instax-dutta/chatscrub"
+
+[project.scripts]
+chatscrub = "chatscrub.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
