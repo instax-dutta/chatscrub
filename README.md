@@ -2,18 +2,24 @@
 
 Turn a raw chat export into a privacy-scrubbed, safety-filtered dataset.
 
-Chats are exported with
-[discord-channel-exporter](https://github.com/TejesMunde/discord-channel-exporter)
-(a Vencord plugin that dumps a whole channel's history to JSON), then run
-through `chatscrub` to strip identity, contactable PII, and safety-sensitive
-content. The result is JSONL you can split, sample, and publish.
+Chats are extracted with
+[apex-discord-scraper](https://github.com/instax-dutta/apex-discord-scraper)
+(headless multi-channel extractor: time-sharded parallel backfill, resumable
+extraction, live Gateway capture, chunked JSON archives), then run through
+`chatscrub` to strip identity, contactable PII, and safety-sensitive content.
+The result is JSONL you can split, sample, and publish.
+
+`chatscrub` also reads the output of
+[discord-channel-exporter](https://github.com/TejesMunde/discord-channel-exporter),
+the Vencord plugin this pipeline started from — same record schema, so either
+extractor feeds straight in.
 
 ```
-Discord channel
+Discord channel(s)
       │
       ▼
-discord-channel-exporter          raw JSON files, one per channel (or per 50k-msg part)
-      │
+apex-discord-scraper              chunked JSON archives (or JSONL), one per channel
+      │                           (or discord-channel-exporter for in-app export)
       ▼
 chatscrub                         scrubbed, filtered, deduplicated JSONL
       │
@@ -41,7 +47,9 @@ config so your scrub policy is reviewable without reading code.
 ## Requirements
 
 - Python 3.11+ (uses stdlib `tomllib`)
-- One or more JSON files exported by
+- One or more JSON/JSONL exports from
+  [apex-discord-scraper](https://github.com/instax-dutta/apex-discord-scraper)
+  (recommended) or
   [discord-channel-exporter](https://github.com/TejesMunde/discord-channel-exporter)
   (see below for install)
 
@@ -60,9 +68,26 @@ PYTHONPATH=src python3 -m chatscrub --config config.toml
 
 ### Getting the exports
 
-Install the exporter plugin into Vencord (one-click installer on Windows /
-macOS / Linux), open the channel you want, and click `⬇ Export`. Files land in
-`~/Downloads`:
+**Recommended: [apex-discord-scraper](https://github.com/instax-dutta/apex-discord-scraper)**
+(headless, multi-channel, no Discord app required).
+
+```bash
+git clone https://github.com/instax-dutta/apex-discord-scraper.git
+cd apex-discord-scraper && npm install
+npm run extract -- <channelId>            # bulk backfill, resumable
+npm run extract -- <channelId> --export-jsonl ./out.jsonl   # or straight to JSONL
+```
+
+Supports parallel multi-channel extraction, automatic incremental catch-up,
+live Gateway capture, and `watch` for unattended top-ups. Archives land in
+`./data/apex-scraper_json/` chunked at 50k messages per part — same file
+layout `chatscrub` expects.
+
+**Alternative: [discord-channel-exporter](https://github.com/TejesMunde/discord-channel-exporter)**
+(in-app Vencord plugin, single channel).
+
+Install the plugin into Vencord, open the channel, and click `⬇ Export`. Files
+land in `~/Downloads`:
 
 ```
 general-1788524967852.json            # under 50,000 messages
@@ -70,7 +95,9 @@ general-1788524967852-part001.json    # 50,000 each for larger channels
 live-1234567890123456789-1788524967852.json
 ```
 
-Each file is a bare JSON array of records:
+Either way, each file is a bare JSON array of records with the same fields
+(`id`, `author`, `content`, `timestamp`, `replyTo`, ...), so `chatscrub` reads
+them directly — no conversion step.
 
 ```json
 {
@@ -87,8 +114,6 @@ Each file is a bare JSON array of records:
   "threadId": null
 }
 ```
-
-`chatscrub` reads this format directly — no conversion step.
 
 ## Quickstart
 
@@ -263,9 +288,13 @@ idempotency, and a "no leak" assertion over the output.
 
 ## Related
 
+- [apex-discord-scraper](https://github.com/instax-dutta/apex-discord-scraper)
+  - the recommended extractor for this pipeline. Headless, multi-channel,
+    time-sharded parallel backfill, resumable, live Gateway capture, and
+    chunked JSON archives. Reads the same record schema this tool consumes.
 - [discord-channel-exporter](https://github.com/TejesMunde/discord-channel-exporter)
-  - the export half of this pipeline. Full history with reply chains,
-    attachment metadata, and a live-capture mode.
+  - the in-app Vencord plugin this pipeline started from. Full history with
+    reply chains, attachment metadata, and a live-capture mode.
 
 ## License
 

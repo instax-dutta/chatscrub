@@ -11,13 +11,18 @@
 
 [paths]
 # Glob patterns for your raw exports. Multiple patterns are supported.
+#
+# apex-discord-scraper (recommended) writes to ./data/apex-scraper_json/:
+#   ~/apex-discord-scraper/data/apex-scraper_json/*.json
+#
 # discord-channel-exporter drops files into ~/Downloads:
 #   general-1788524967852.json           # single file, < 50k msgs
 #   general-1788524967852-part001.json   # multi-part, 50k each
 #   live-1234567890123456789-<ts>.json   # live capture
-# Point at whichever you have. All are bare JSON arrays of records.
+#
+# All are bare JSON arrays of records with the same schema.
 input_globs = [
-    '~/Downloads/*.json',
+    '~/apex-discord-scraper/data/apex-scraper_json/*.json',
 ]
 # Or keep exports organized per channel and scrub them all at once:
 #   '~/exports/*/*.json'
